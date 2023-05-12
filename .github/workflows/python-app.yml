@@ -21,8 +21,9 @@ jobs:
           python-version: "3.11"
       - name: Install dependencies
         run: |
+          cd $GITHUB_WORKSPACE
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-      - name: Test with pytest
+      - name: Test
         run: |
-          python -m unittest
+          python -m unittest discover api/src/test
