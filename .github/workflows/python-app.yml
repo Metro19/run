@@ -3,9 +3,7 @@
 
 name: Python CI
 
-on:
-  - push:
-  - pull_request:
+on: ["push", "pull-request"]
 
 permissions:
   contents: read
