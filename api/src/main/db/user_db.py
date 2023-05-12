@@ -9,6 +9,7 @@ from typing import Optional
 
 import sqlalchemy
 from sqlalchemy.orm import Session
+from sqlalchemy.orm import Mapped
 
 from api.src.main.db import generic_db
 
@@ -18,13 +19,36 @@ class User(generic_db.Base):
     Datatable to manage a user
     """
 
-    ID: str
-    username: str
-    email: str
-    password: str
+    __tablename__ = "users"
 
-    def __str__(self):
+    ID: Mapped[str] = sqlalchemy.Column(sqlalchemy.String, primary_key=True)
+    username: Mapped[str] = sqlalchemy.Column(sqlalchemy.String)
+    email: Mapped[str] = sqlalchemy.Column(sqlalchemy.String)
+    password: Mapped[str] = sqlalchemy.Column(sqlalchemy.String)
+
+    def __repr__(self):
         return f"User: {self.ID} {self.username} {self.email} {self.password}"
+
+    def __eq__(self, other):
+        # check for same type
+        if not isinstance(other, User):
+            return False
+
+        return self.ID == other.ID and self.username == other.username and self.email == other.email and\
+            self.password == other.password
+
+    def equals_no_id(self, other):
+        """
+        Check to see if two users are equal, but ignore the ID
+
+        :param other: Other user object
+        :return: If the two users are equal, but ignore the ID
+        """
+        # check for same type
+        if not isinstance(other, User):
+            return False
+
+        return self.username == other.username and self.email == other.email and self.password == other.password
 
 
 class UserCommands:
@@ -36,6 +60,9 @@ class UserCommands:
 
         :param db_obj: DBModificationObject to use
         """
+        # add to db
+        User.metadata.create_all(db_obj.engine)
+
         self.engine: sqlalchemy.Engine = db_obj.engine
 
     def create_user(self, name: str, email: str, password: str) -> Optional[User]:
@@ -55,9 +82,11 @@ class UserCommands:
             session.add(user)
             session.commit()
 
+            created_user = session.get(User, user.ID)
+
         logging.debug("Created user: %s", user)
 
-        return user
+        return created_user
 
     def retrieve_user(self, user_id: str) -> Optional[User]:
         """
@@ -102,6 +131,9 @@ class UserCommands:
             # commit
             session.commit()
 
+            # return updated user object
+            return session.get(User, user_id)
+
     def delete_user(self, user_id: str) -> bool:
         """
         Delete a user from the database
@@ -122,3 +154,5 @@ class UserCommands:
 
             # delete object
             session.delete(u)
+
+            return True

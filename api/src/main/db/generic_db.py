@@ -44,7 +44,7 @@ def create_id(object_name: str) -> str:
     :param object_name: The object code to append to the ID
     :return: Random ID in the format of OBJECTNAME_UUID
     """
-    return f"{object_name}_{str(uuid.uuid4()).strip('-')}"
+    return f"{object_name}_{str(uuid.uuid4()).replace('-', '').upper()}"
 
 
 # create and store the DB modification object
