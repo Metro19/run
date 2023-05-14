@@ -19,14 +19,14 @@ class TestUserCommands(TestCase):
 
     uc: UserCommands = UserCommands(generic_db.db_obj)
 
-    VALID_JOB = User(ID="x", username="x", email="x", password="x")
-    VALID_JOB_2 = User(ID="", username="", email="", password="")
+    VALID_USER = User(ID="x", username="x", email="x", password="x")
+    VALID_USER_2 = User(ID="", username="", email="", password="")
 
-    VALID_JOBS = [VALID_JOB, VALID_JOB_2]
+    VALID_USERS = [VALID_USER, VALID_USER_2]
 
-    UPDATE_JOB = User(ID="a", username="b", email="c", password="d")
+    UPDATE_USER = User(ID="a", username="b", email="c", password="d")
 
-    INVALID_JOB = User(ID=" ", username="  ", email="   ", password="    ")
+    INVALID_USER = User(ID=" ", username="  ", email="   ", password="    ")
 
     def test_create_user(self):
         """
@@ -35,14 +35,14 @@ class TestUserCommands(TestCase):
         :return: None
         """
 
-        for job in self.VALID_JOBS:
+        for user in self.VALID_USERS:
             # add to db
-            created_job = self.uc.create_user(job.username, job.email, job.password)
-            self.assertTrue(created_job.equals_no_id(job))
+            created_job = self.uc.create_user(user.username, user.email, user.password)
+            self.assertTrue(created_job.equals_no_id(user))
 
             # check db
             retrieved_job = self.uc.retrieve_user(created_job.ID)
-            self.assertTrue(retrieved_job.equals_no_id(job))
+            self.assertTrue(retrieved_job.equals_no_id(user))
 
     def test_retrieve_user(self):
         """
@@ -50,14 +50,14 @@ class TestUserCommands(TestCase):
 
         :return:
         """
-        for job in self.VALID_JOBS:
+        for user in self.VALID_USERS:
             # add to db
-            created_job = self.uc.create_user(job.username, job.email, job.password)
+            created_job = self.uc.create_user(user.username, user.email, user.password)
 
             # check db
             retrieved_job = self.uc.retrieve_user(created_job.ID)
             self.assertIsNotNone(retrieved_job)
-            self.assertTrue(retrieved_job.equals_no_id(job))
+            self.assertTrue(retrieved_job.equals_no_id(user))
 
     def test_retrieve_invalid_user(self):
         """
@@ -65,7 +65,7 @@ class TestUserCommands(TestCase):
 
         :return:
         """
-        retrieved_job = self.uc.retrieve_user(self.INVALID_JOB.ID)
+        retrieved_job = self.uc.retrieve_user(self.INVALID_USER.ID)
         self.assertIsNone(retrieved_job)
 
     def test_modify_user(self):
@@ -76,15 +76,15 @@ class TestUserCommands(TestCase):
         """
 
         # create user
-        created_job = self.uc.create_user(self.VALID_JOB.username, self.VALID_JOB.email, self.VALID_JOB.password)
+        created_job = self.uc.create_user(self.VALID_USER.username, self.VALID_USER.email, self.VALID_USER.password)
 
         # modify
-        modified_job = self.uc.modify_user(created_job.ID, self.UPDATE_JOB.username, self.UPDATE_JOB.email,
-                                           self.UPDATE_JOB.password)
+        modified_job = self.uc.modify_user(created_job.ID, self.UPDATE_USER.username, self.UPDATE_USER.email,
+                                           self.UPDATE_USER.password)
 
         # check
         self.assertIsNotNone(modified_job)
-        self.assertTrue(modified_job.equals_no_id(self.UPDATE_JOB))
+        self.assertTrue(modified_job.equals_no_id(self.UPDATE_USER))
 
     def test_modify_invalid_user(self):
         """
@@ -94,11 +94,11 @@ class TestUserCommands(TestCase):
         """
 
         # create user
-        self.uc.create_user(self.VALID_JOB.username, self.VALID_JOB.email, self.VALID_JOB.password)
+        self.uc.create_user(self.VALID_USER.username, self.VALID_USER.email, self.VALID_USER.password)
 
         # modify
-        modified_job = self.uc.modify_user(self.INVALID_JOB.ID, self.UPDATE_JOB.username, self.UPDATE_JOB.email,
-                                           self.UPDATE_JOB.password)
+        modified_job = self.uc.modify_user(self.INVALID_USER.ID, self.UPDATE_USER.username, self.UPDATE_USER.email,
+                                           self.UPDATE_USER.password)
 
         # check
         self.assertIsNone(modified_job)
@@ -111,7 +111,7 @@ class TestUserCommands(TestCase):
         """
 
         # create user
-        created_job = self.uc.create_user(self.VALID_JOB.username, self.VALID_JOB.email, self.VALID_JOB.password)
+        created_job = self.uc.create_user(self.VALID_USER.username, self.VALID_USER.email, self.VALID_USER.password)
 
         # delete and check
         self.assertTrue(self.uc.delete_user(created_job.ID))
@@ -124,4 +124,4 @@ class TestUserCommands(TestCase):
         """
 
         # try to delete and check
-        self.assertFalse(self.uc.delete_user(self.INVALID_JOB.ID))
+        self.assertFalse(self.uc.delete_user(self.INVALID_USER.ID))

@@ -25,6 +25,10 @@ def sep_users(users: str) -> list[str]:
     :return: List of users
     """
 
+    # empty string, empty list
+    if users == "":
+        return []
+
     return users.split("#")
 
 
@@ -96,11 +100,12 @@ class PlanCommands:
 
         self.engine: sqlalchemy.Engine = db_obj.engine
 
-    def create_plan(self, name: str, date: datetime, distance: float, distance_unit: str) -> Optional[Plan]:
+    def create_plan(self, name: str, description: str, date: datetime, distance: float, distance_unit: str) -> Optional[Plan]:
         """
         Create a new plan
 
         :param name: Name of the plan
+        :param description: Description of the plan
         :param date: Date of the plan
         :param distance: Distance of the plan
         :param distance_unit: Distance unit of the plan
@@ -108,17 +113,19 @@ class PlanCommands:
         """
 
         # create new plan object
-        new_plan = Plan(ID=generic_db.create_id("PLAN_"), name=name, date=date, distance=distance,
-                        distance_unit=distance_unit, users="")
+        new_plan = Plan(ID=generic_db.create_id("PLAN"), name=name, description=description, date=date,
+                        distance=distance, distance_unit=distance_unit, users="")
 
         # add to db
         with Session(self.engine) as session:
             session.add(new_plan)
             session.commit()
 
-        logging.debug(f"Created plan: {new_plan}")
+            created_plan = session.get(Plan, new_plan.ID)
 
-        return new_plan
+        logging.debug(f"Created plan: {created_plan}")
+
+        return created_plan
 
     def retrieve_plan(self, plan_id: str) -> Optional[Plan]:
         """
@@ -132,8 +139,8 @@ class PlanCommands:
         with Session(self.engine) as session:
             p: Optional[Plan] = session.get(Plan, plan_id)
 
-        logging.debug(f"Retrieved plan: {p}")
-        return p
+            logging.debug(f"Retrieved plan: %s", p)
+            return p
 
     def get_user_ids_in_plan(self, plan_id: str) -> Optional[list[str]]:
         """
@@ -181,7 +188,7 @@ class PlanCommands:
         logging.debug(f"Retrieved users in plan: {users}")
         return users
 
-    def add_users_from_plan(self, plan_id: str, users: Union[list[User], list[str]]) -> Optional[Plan]:
+    def add_users_to_plan(self, plan_id: str, users: Union[list[User], list[str]]) -> Optional[Plan]:
         """
         Add users to a plan
 
@@ -200,15 +207,24 @@ class PlanCommands:
         if type(users[0]) == User:
             users = [user.ID for user in users]
 
-        # get user list and add users
-        user_list = sep_users(p.users)
+        # get user list and add users if not empty
+        user_list = []
+        if p.users:
+            user_list = sep_users(p.users)
         user_list += users
 
         # remove duplicates
         user_list = list(set(user_list))
 
-        # update plan
-        self.modify_plan(plan_id, p.name, p.date, p.distance, p.distance_unit, join_users(user_list))
+        with Session(self.engine) as session:
+            # get plan
+            curr_plan = session.get(Plan, plan_id)
+
+            # update plan with user list
+            curr_plan.users = join_users(user_list)
+            session.commit()
+
+            return session.get(Plan, plan_id)
 
     def remove_users_from_plan(self, plan_id: str, users: Union[list[User], list[str]]) -> Optional[Plan]:
         """
@@ -233,11 +249,18 @@ class PlanCommands:
         user_list = sep_users(p.users)
         user_list = [user for user in user_list if user not in users]
 
-        # update plan
-        self.modify_plan(plan_id, p.name, p.date, p.distance, p.distance_unit, join_users(user_list))
+        with Session(self.engine) as session:
+            # get plan
+            curr_plan = session.get(Plan, plan_id)
 
-    def modify_plan(self, plan_id: str, new_name: str, new_date: datetime, new_distance: float,
-                    new_distance_unit: str, new_user_list: str) -> Optional[Plan]:
+            # update plan with user list
+            curr_plan.users = join_users(user_list)
+            session.commit()
+
+            return session.get(Plan, plan_id)
+
+    def modify_plan(self, plan_id: str, new_name: str, new_description: str, new_date: datetime, new_distance: float,
+                    new_distance_unit: str) -> Optional[Plan]:
         """
         Modify a plan
 
@@ -261,15 +284,15 @@ class PlanCommands:
 
             # modify plan
             p.name = new_name
+            p.description = new_description
             p.date = new_date
             p.distance = new_distance
             p.distance_unit = new_distance_unit
-            p.users = new_user_list
 
             session.commit()
 
-        logging.debug(f"Modified plan: {p}")
-        return p
+            logging.debug(f"Modified plan: {p}")
+            return session.get(Plan, plan_id)
 
     def delete_plan(self, plan_id: str) -> bool:
         """
