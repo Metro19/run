@@ -10,7 +10,7 @@ from datetime import datetime
 from typing import Optional, Union
 
 import sqlalchemy
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, relationship
 from sqlalchemy.orm import Mapped
 
 from api.src.main.db import generic_db
@@ -55,6 +55,9 @@ class Plan(generic_db.Base):
     distance: Mapped[float] = sqlalchemy.Column(sqlalchemy.Float)
     distance_unit: Mapped[str] = sqlalchemy.Column(sqlalchemy.String)
     users: Mapped[str] = sqlalchemy.Column(sqlalchemy.String)  # user ID separated by "#"
+
+    # relationship with child event
+    child_events: Mapped["Event"] = relationship(back_populates="plan", cascade="all, delete-orphan")
 
     def __repr__(self):
         return f"Plan: {self.ID} {self.name} {self.description} {self.date} {self.distance} {self.distance_unit} " \
