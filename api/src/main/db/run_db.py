@@ -11,7 +11,6 @@ import sqlalchemy.engine.base
 from sqlalchemy.orm.session import Session
 
 from api.src.main.db import generic_db
-from api.src.main.db.generic_db import db_obj
 from api.src.main.db.plan_db import Run, Event
 
 
@@ -20,7 +19,7 @@ class RunCommands:
     Class to handle the run commands
     """
 
-    def __init__(self):
+    def __init__(self, db_obj: generic_db.DBModificationObject):
         """
         Create a new RunCommands object
         """
@@ -93,7 +92,7 @@ class RunCommands:
 
             return session.get(Run, run.ID)
 
-    def delete_run(self, run_id: str) -> Optional[Run]:
+    def delete_run(self, run_id: str) -> bool:
         """
         Delete a run from the database
 
@@ -106,10 +105,10 @@ class RunCommands:
             run: Optional[Run] = session.get(Run, run_id)
 
             if run is None:
-                return None
+                return False
 
             # delete run
             session.delete(run)
             session.commit()
 
-            return run
+            return True
