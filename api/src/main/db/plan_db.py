@@ -103,6 +103,7 @@ class Event(generic_db.Base):
     distance_unit: Mapped[str] = sqlalchemy.Column(sqlalchemy.String)
 
     plan: Mapped["Plan"] = relationship(back_populates="child_events")
+    run: Mapped[List["Run"]] = relationship("Run", cascade="all, delete-orphan")
 
     def __repr__(self):
         return f"Event: {self.ID} {self.name} {self.date} {self.distance} {self.distance_unit}"
@@ -131,6 +132,47 @@ class Event(generic_db.Base):
         # check if all are equal
         return self.name == other.name and self.date == other.date and self.distance == other.distance and \
             self.distance_unit == other.distance_unit
+
+
+class Run(generic_db.Base):
+    """
+    SQLAlchemy Class for run object
+    """
+
+    __tablename__ = "runs"
+
+    ID: Mapped[str] = sqlalchemy.Column(sqlalchemy.String, primary_key=True)
+    event_id: Mapped[str] = sqlalchemy.Column(sqlalchemy.String, sqlalchemy.ForeignKey("events.ID"))
+    date: Mapped[datetime] = sqlalchemy.Column(sqlalchemy.DateTime)
+    status: Mapped[str] = sqlalchemy.Column(sqlalchemy.String)
+
+    event: Mapped["Event"] = relationship("Event", back_populates="run")
+
+    def __repr__(self):
+        return f"Run: {self.ID} {self.date} {self.status}"
+
+    def __eq__(self, other):
+        # check if other is an event
+        if not isinstance(other, Run):
+            return False
+
+        # check if all are equal
+        return self.ID == other.ID and self.date == other.date and self.status == other.status
+
+    def equals_no_id(self, other):
+        """
+        Check to see if two runs are equal, but ignore the ID
+
+        :param other: Other run object
+        :return: If the two runs are equal, but ignore the ID
+        """
+
+        # check if other is an event
+        if not isinstance(other, Run):
+            return False
+
+        # check if all are equal
+        return self.date == other.date and self.status == other.status
 
 
 class PlanCommands:
