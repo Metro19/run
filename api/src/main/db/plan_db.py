@@ -7,7 +7,7 @@ Functions to modify and create plans within the database
 
 import logging
 from datetime import datetime
-from typing import Optional, Union
+from typing import Optional, Union, List
 
 import sqlalchemy
 from sqlalchemy.orm import Session, relationship
@@ -57,7 +57,7 @@ class Plan(generic_db.Base):
     users: Mapped[str] = sqlalchemy.Column(sqlalchemy.String)  # user ID separated by "#"
 
     # relationship with child event
-    child_events: Mapped["Event"] = relationship(back_populates="plan", cascade="all, delete-orphan")
+    child_events: Mapped[List["Event"]] = relationship(back_populates="plan", cascade="all, delete-orphan")
 
     def __repr__(self):
         return f"Plan: {self.ID} {self.name} {self.description} {self.date} {self.distance} {self.distance_unit} " \
@@ -88,6 +88,35 @@ class Plan(generic_db.Base):
             self.distance == other.distance and self.distance_unit == other.distance_unit
 
 
+class Event(generic_db.Base):
+    """
+    SQLAlchemy Class for event object
+    """
+
+    __tablename__ = "events"
+
+    ID: Mapped[str] = sqlalchemy.Column(sqlalchemy.String, primary_key=True)
+    plan_id: Mapped[str] = sqlalchemy.Column(sqlalchemy.String, sqlalchemy.ForeignKey("plans.ID"))
+    name: Mapped[str] = sqlalchemy.Column(sqlalchemy.String)
+    date: Mapped[datetime] = sqlalchemy.Column(sqlalchemy.DateTime)
+    distance: Mapped[float] = sqlalchemy.Column(sqlalchemy.Float)
+    distance_unit: Mapped[str] = sqlalchemy.Column(sqlalchemy.String)
+
+    plan: Mapped["Plan"] = relationship(back_populates="child_events")
+
+    def __repr__(self):
+        return f"Event: {self.ID} {self.name} {self.date} {self.distance} {self.distance_unit}"
+
+    def __eq__(self, other):
+        # check if other is an event
+        if not isinstance(other, Event):
+            return False
+
+        # check if all are equal
+        return self.ID == other.ID and self.name == other.name and self.date == other.date and \
+            self.distance == other.distance and self.distance_unit == other.distance_unit
+
+
 class PlanCommands:
     """Database commands for a plan object"""
 
@@ -103,7 +132,8 @@ class PlanCommands:
 
         self.engine: sqlalchemy.Engine = db_obj.engine
 
-    def create_plan(self, name: str, description: str, date: datetime, distance: float, distance_unit: str) -> Optional[Plan]:
+    def create_plan(self, name: str, description: str, date: datetime, distance: float, distance_unit: str) -> Optional[
+        Plan]:
         """
         Create a new plan
 

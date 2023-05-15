@@ -14,34 +14,7 @@ from sqlalchemy.orm import Mapped
 from api.src.main.db import generic_db
 from api.src.main.db.plan_db import PlanCommands, Plan
 from api.src.main.db.user_db import User
-
-
-class Event(generic_db.Base):
-    """
-    SQLAlchemy Class for event object
-    """
-
-    __tablename__ = "events"
-
-    ID: Mapped[str] = sqlalchemy.Column(sqlalchemy.String, primary_key=True)
-    name: Mapped[str] = sqlalchemy.Column(sqlalchemy.String)
-    date: Mapped[datetime] = sqlalchemy.Column(sqlalchemy.DateTime)
-    distance: Mapped[float] = sqlalchemy.Column(sqlalchemy.Float)
-    distance_unit: Mapped[str] = sqlalchemy.Column(sqlalchemy.String)
-
-    plan: Mapped["Plan"] = relationship(back_populates="child_events")
-
-    def __repr__(self):
-        return f"Event: {self.ID} {self.name} {self.date} {self.distance} {self.distance_unit}"
-
-    def __eq__(self, other):
-        # check if other is an event
-        if not isinstance(other, Event):
-            return False
-
-        # check if all are equal
-        return self.ID == other.ID and self.name == other.name and self.date == other.date and \
-            self.distance == other.distance and self.distance_unit == other.distance_unit
+from api.src.main.db.plan_db import Event
 
 
 class EventCommands:
@@ -76,6 +49,24 @@ class EventCommands:
         :return: Created event
         """
 
+        with Session(self.engine) as session:
+            # check for valid plan
+            plan: Optional[Plan] = session.get(Plan, plan_id)
+
+            if plan is None:
+                return None
+
+            # create event
+            event: Event = Event(ID=generic_db.create_id("EVENT"), name=name, date=date, distance=distance,
+                                 distance_unit=distance_unit)
+
+            # add to db
+            plan.child_events.append(event)
+
+            session.commit()
+
+            return session.get(Event, event.ID)
+
     def retrieve_event(self, event_id: str) -> Optional[Event]:
         """
         Retrieve an event from the database
@@ -83,6 +74,9 @@ class EventCommands:
         :param event_id: Event ID to retrieve
         :return: Retrieved event
         """
+
+        with Session(self.engine) as session:
+            return session.get(Event, event_id)
 
     def modify_event(self, event_id: str, name: str, date: datetime, distance: float, distance_unit: str) -> \
             Optional[Event]:
@@ -97,6 +91,23 @@ class EventCommands:
         :return: Modified event
         """
 
+        with Session(self.engine) as session:
+            # check for valid event
+            event: Optional[Event] = session.get(Event, event_id)
+
+            if event is None:
+                return None
+
+            # modify event
+            event.name = name
+            event.date = date
+            event.distance = distance
+            event.distance_unit = distance_unit
+
+            session.commit()
+
+            return session.get(Event, event.ID)
+
     def delete_event(self, event_id: str) -> bool:
         """
         Delete an event from the database
@@ -104,3 +115,17 @@ class EventCommands:
         :param event_id: Event ID to delete
         :return: If the event was deleted
         """
+
+        with Session(self.engine) as session:
+            # check for valid event
+            event: Optional[Event] = session.get(Event, event_id)
+
+            if event is None:
+                return False
+
+            # delete event
+            session.delete(event)
+
+            session.commit()
+
+            return True
