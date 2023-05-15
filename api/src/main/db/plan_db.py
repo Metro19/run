@@ -116,6 +116,22 @@ class Event(generic_db.Base):
         return self.ID == other.ID and self.name == other.name and self.date == other.date and \
             self.distance == other.distance and self.distance_unit == other.distance_unit
 
+    def equals_no_id(self, other):
+        """
+        Check to see if two events are equal, but ignore the ID
+
+        :param other: Other event object
+        :return:
+        """
+
+        # check if other is an event
+        if not isinstance(other, Event):
+            return False
+
+        # check if all are equal
+        return self.name == other.name and self.date == other.date and self.distance == other.distance and \
+            self.distance_unit == other.distance_unit
+
 
 class PlanCommands:
     """Database commands for a plan object"""
