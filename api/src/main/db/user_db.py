@@ -26,6 +26,9 @@ class User(generic_db.Base):
     email: Mapped[str] = sqlalchemy.Column(sqlalchemy.String)
     password: Mapped[str] = sqlalchemy.Column(sqlalchemy.String)
 
+    class Config:
+        orm_mode = True
+
     def __repr__(self):
         return f"User: {self.ID} {self.username} {self.email} {self.password}"
 
@@ -133,6 +136,21 @@ class UserCommands:
 
             # return updated user object
             return session.get(User, user_id)
+
+    def retrieve_user_by_email(self, email: str) -> Optional[User]:
+        """
+        Retrieve a user by their email
+
+        :param email: Email to retrieve by
+        :return: User if found, or none
+        """
+
+        with Session(self.engine) as session:
+            # get user
+            u: Optional[User] = session.query(User).filter(User.email == email).first()
+
+            logging.debug("Retrieved user by email: %s", u)
+            return u
 
     def delete_user(self, user_id: str) -> bool:
         """
