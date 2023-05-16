@@ -22,14 +22,25 @@ User.metadata.create_all(bind=generic_db.db_obj.engine)
 uc: UserCommands = UserCommands(generic_db.db_obj)
 
 
-@router.post("/user", response_model=models.User)
-def create_user(user: models.UserCreate):
+@router.post("/user/create", tags=["User"])
+def create_user(username: str, email: EmailStr, password: str):
     """
     Creates a user
+
+    :param username: Username
+    :param email: Email address
+    :param password: Password
+    :return: Created user object
     """
-    # TODO: Check if email is already used
-    created_user = uc.create_user(user.username, user.email,
-                                  bcrypt.hashpw(user.password.encode('utf-8'), bcrypt.gensalt(15)))
+
+    # Check if email is already used
+    user_check = uc.retrieve_user_by_email(email)
+
+    if user_check is not None:
+        raise HTTPException(status_code=409, detail="Email already in use")
+
+    created_user = uc.create_user(username, email,
+                                  bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt(15)).decode('utf-8'))
 
     # check for success
     if created_user is None:
@@ -38,9 +49,7 @@ def create_user(user: models.UserCreate):
     return created_user
 
 
-# @router.get("/user/{user_id}", response_model=models.User)
-
-@router.get("/get_user_information", response_model=models.User)
+@router.get("/user/info", response_model=models.User, tags=["User"])
 def get_user(token: Annotated[str, Depends(oauth2_scheme)]):
     """
     Retrieves a user
@@ -58,19 +67,21 @@ def get_user(token: Annotated[str, Depends(oauth2_scheme)]):
     return user
 
 
-@router.post("/user/modify", response_model=models.User)
-def modify_user(user_id: str, username: str | None = None, email: EmailStr | None = None):
+@router.post("/user/modify", response_model=models.User, tags=["User"])
+def modify_user(token: Annotated[str, Depends(oauth2_scheme)],
+                username: str | None = None, email: EmailStr | None = None, ):
     """
     Modify a user
 
     :param user_id: User ID to modify
+    :param token: OAuth 2 token
     :param username: New name
     :param email: New email
     :return: Updated user
     """
 
     # get user
-    retrieved_user = uc.retrieve_user(user_id)
+    retrieved_user = retrieve_user(token)
 
     # check for success
     if retrieved_user is None:
@@ -88,3 +99,22 @@ def modify_user(user_id: str, username: str | None = None, email: EmailStr | Non
                                    retrieved_user.password)
 
     return modified_user
+
+
+@router.delete("/user/delete", response_model=models.User, tags=["User"])
+def delete_user(token: Annotated[str, Depends(oauth2_scheme)]):
+    # get user
+    retrieved_user = retrieve_user(token)
+
+    # check for success
+    if retrieved_user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    # delete user
+    deleted = uc.delete_user(retrieved_user.ID)
+
+    # see if operation succeeded
+    if deleted is False:
+        raise HTTPException(status_code=500, detail="Failed to delete user")
+    else:
+        raise HTTPException(status_code=200, detail="User deleted")

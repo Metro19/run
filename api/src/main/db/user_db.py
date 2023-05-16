@@ -172,5 +172,6 @@ class UserCommands:
 
             # delete object
             session.delete(u)
+            session.commit()
 
             return True

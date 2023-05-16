@@ -42,7 +42,7 @@ def authenticate_user(username: str, password: str):
         return False
 
     # check for valid password
-    if not bcrypt.checkpw(password.encode('utf-8'), user.password):
+    if not bcrypt.checkpw(password.encode('utf-8'), user.password.encode('utf-8')):
         return False
 
     return True

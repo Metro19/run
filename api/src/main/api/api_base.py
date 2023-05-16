@@ -16,6 +16,7 @@ from fastapi.security.oauth2 import OAuth2PasswordRequestForm, OAuth2PasswordBea
 from jose import jwt
 from jose.exceptions import JWTError
 
+from . import auth
 from .auth import create_access_token, ACCESS_TOKEN_EXPIRE_MINUTES
 from .models import TokenData
 from .routers import user_api
@@ -24,6 +25,14 @@ from ..db.user_db import UserCommands
 
 app = FastAPI()
 
+# docs metadata
+tags_metadata = [
+    {
+        "name": "User",
+        "description": "Operations with users."
+    }
+]
+
 # setup up sub files
 app.router.include_router(user_api.router)
 
@@ -31,18 +40,26 @@ app.router.include_router(user_api.router)
 uc: UserCommands = UserCommands(generic_db.db_obj)
 
 
-@app.get("/test")
+@app.get("/ping", tags=["Default"])
 async def test():
-    return {"message": "Hello World"}
+    return {"message": "Success!"}
 
 
-@app.post("/token")
+@app.post("/token", tags=["Auth"])
 async def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
     # get user
     user = uc.retrieve_user_by_email(form_data.username)
 
     # check for success
     if user is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    # verify password
+    if not auth.authenticate_user(form_data.username, form_data.password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect username or password",
