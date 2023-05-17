@@ -31,5 +31,26 @@ class Token(BaseModel):
     access_token: str
     token_type: str
 
+
 class TokenData(BaseModel):
     username: str | None = None
+
+
+class EventBase(BaseModel):
+    name: str
+    description: str
+    start_time: str
+    end_time: str
+    location: str
+    plan_id: str
+
+
+class EventCreate(EventBase):
+    plan_id: str
+
+
+class Event(EventBase):
+    ID: str
+
+    class Config:
+        orm_mode = True
