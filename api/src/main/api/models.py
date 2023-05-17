@@ -54,3 +54,19 @@ class Event(EventBase):
 
     class Config:
         orm_mode = True
+
+
+class RunBase(BaseModel):
+    date: str
+    status: str
+
+
+class RunCreate(RunBase):
+    event_id: str
+
+
+class Run(RunBase):
+    ID: str
+
+    class Config:
+        orm_mode = True
