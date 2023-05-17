@@ -16,8 +16,8 @@ from api.src.main.api.auth import oauth2_scheme, retrieve_user
 from api.src.main.db import generic_db
 from api.src.main.db.user_db import UserCommands, User
 
-# setup
 router = APIRouter()
+
 User.metadata.create_all(bind=generic_db.db_obj.engine)
 uc: UserCommands = UserCommands(generic_db.db_obj)
 

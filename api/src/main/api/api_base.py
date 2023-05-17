@@ -19,7 +19,7 @@ from jose.exceptions import JWTError
 from . import auth
 from .auth import create_access_token, ACCESS_TOKEN_EXPIRE_MINUTES
 from .models import TokenData
-from .routers import user_api
+from .routers import user_api, plan_api
 from ..db import generic_db
 from ..db.user_db import UserCommands
 
@@ -30,11 +30,16 @@ tags_metadata = [
     {
         "name": "User",
         "description": "Operations with users."
+    },
+    {
+        "name": "Plan",
+        "description": "Operations with plans."
     }
 ]
 
 # setup up sub files
 app.router.include_router(user_api.router)
+app.router.include_router(plan_api.router)
 
 # setup user commands
 uc: UserCommands = UserCommands(generic_db.db_obj)
