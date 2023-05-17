@@ -4,6 +4,7 @@ By: Zack Bamford
 
 File to test the run commands to the database
 """
+import logging
 from datetime import datetime
 from typing import Optional
 
@@ -29,11 +30,12 @@ class RunCommands:
 
         self.engine: sqlalchemy.Engine = db_obj.engine
 
-    def create_run(self, event_id: str, date: datetime, status: str) -> Optional[Run]:
+    def create_run(self, event_id: str, user_id: str, date: datetime, status: str) -> Optional[Run]:
         """
         Create a new run
 
         :param event_id: Event ID to add run to
+        :param user_id: User ID who completed run
         :param date: Date completed on
         :param status: Status of completion
         :return: Created run if successful
@@ -47,7 +49,7 @@ class RunCommands:
                 return None
 
             # create run
-            run: Run = Run(ID=generic_db.create_id("RUN"), event_id=event_id, date=date, status=status)
+            run: Run = Run(ID=generic_db.create_id("RUN"), event_id=event_id, usr_id=user_id, date=date, status=status)
 
             # add to db
             session.add(run)
@@ -64,7 +66,9 @@ class RunCommands:
         """
 
         with Session(self.engine) as session:
-            return session.get(Run, run_id)
+            r: Optional[Run] = session.get(Run, run_id)
+            logging.debug("Retrieved run: " + str(r))
+            return r
 
     def modify_run(self, run_id: str, date: datetime, status: str) -> Optional[Run]:
         """

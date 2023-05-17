@@ -12,7 +12,7 @@ from sqlalchemy.orm import Session, relationship
 from sqlalchemy.orm import Mapped
 
 from api.src.main.db import generic_db
-from api.src.main.db.plan_db import PlanCommands, Plan
+from api.src.main.db.plan_db import PlanCommands, Plan, Run
 from api.src.main.db.user_db import User
 from api.src.main.db.plan_db import Event
 
@@ -77,6 +77,24 @@ class EventCommands:
 
         with Session(self.engine) as session:
             return session.get(Event, event_id)
+
+    def get_all_run_ids(self, event_id: str) -> Optional[list[Run]]:
+        """
+        Get all event IDs
+
+        :param event_id: Event ID to get all run IDs for
+        :return: List of event IDs, or none if error
+        """
+
+        with Session(self.engine) as session:
+            # check for valid event
+            event: Optional[Event] = session.get(Event, event_id)
+
+            if event is None:
+                return []
+
+            return event.run
+
 
     def modify_event(self, event_id: str, name: str, date: datetime, distance: float, distance_unit: str) -> \
             Optional[Event]:

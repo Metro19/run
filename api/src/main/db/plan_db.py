@@ -105,6 +105,12 @@ class Event(generic_db.Base):
     plan: Mapped["Plan"] = relationship(back_populates="child_events")
     run: Mapped[List["Run"]] = relationship("Run", cascade="all, delete-orphan")
 
+    class Config:
+        orm_mode = True
+
+    def __hash__(self):
+        return hash(self.ID)
+
     def __repr__(self):
         return f"Event: {self.ID} {self.name} {self.date} {self.distance} {self.distance_unit}"
 
@@ -143,13 +149,20 @@ class Run(generic_db.Base):
 
     ID: Mapped[str] = sqlalchemy.Column(sqlalchemy.String, primary_key=True)
     event_id: Mapped[str] = sqlalchemy.Column(sqlalchemy.String, sqlalchemy.ForeignKey("events.ID"))
+    usr_id: Mapped[str] = sqlalchemy.Column(sqlalchemy.String)
     date: Mapped[datetime] = sqlalchemy.Column(sqlalchemy.DateTime)
     status: Mapped[str] = sqlalchemy.Column(sqlalchemy.String)
 
     event: Mapped["Event"] = relationship("Event", back_populates="run")
 
+    class Config:
+        orm_mode = True
+
+    def __hash__(self):
+        return hash(self.ID)
+
     def __repr__(self):
-        return f"Run: {self.ID} {self.date} {self.status}"
+        return f"Run: {self.ID} {self.usr_id} {self.date} {self.status}"
 
     def __eq__(self, other):
         # check if other is an event

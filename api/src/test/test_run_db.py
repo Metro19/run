@@ -25,8 +25,8 @@ class TestRunCommands(TestCase):
     dt = datetime.now()
 
     # example objects
-    VALID_RUN = Run(ID="x", event_id="x", date=dt, status="x")
-    VALID_RUN_2 = Run(ID="", event_id="", date=dt, status="")
+    VALID_RUN = Run(ID="x", event_id="x", usr_id="j", date=dt, status="x")
+    VALID_RUN_2 = Run(ID="", event_id="", usr_id="k", date=dt, status="")
     VALID_RUNS = [VALID_RUN, VALID_RUN_2]
 
     VALID_EVENT = Event(ID="x", plan_id="x", name="x", date=dt, distance=21, distance_unit="ft")
@@ -48,7 +48,7 @@ class TestRunCommands(TestCase):
 
         for run in self.VALID_RUNS:
             # add to db
-            created_run = self.rc.create_run(created_event.ID, run.date, run.status)
+            created_run = self.rc.create_run(created_event.ID, run.usr_id, run.date, run.status)
             self.assertTrue(created_run.equals_no_id(run))
 
             # check db
@@ -69,7 +69,7 @@ class TestRunCommands(TestCase):
 
         for run in self.VALID_RUNS:
             # add to db
-            created_run = self.rc.create_run(created_event.ID, run.date, run.status)
+            created_run = self.rc.create_run(created_event.ID, run.usr_id, run.date, run.status)
 
             # check db
             self.assertTrue(self.rc.get_run(created_run.ID).equals_no_id(run))
@@ -89,7 +89,7 @@ class TestRunCommands(TestCase):
 
         for run in self.VALID_RUNS:
             # add to db
-            created_run = self.rc.create_run(created_event.ID, run.date, run.status)
+            created_run = self.rc.create_run(created_event.ID, run.usr_id, run.date, run.status)
 
             # modify
             created_run.status = "modified"
@@ -108,7 +108,7 @@ class TestRunCommands(TestCase):
 
         for run in self.VALID_RUNS:
             # add to db
-            created_run = self.rc.create_run(created_event.ID, run.date, run.status)
+            created_run = self.rc.create_run(created_event.ID, run.usr_id, run.date, run.status)
 
             # delete
             self.assertTrue(self.rc.delete_run(created_run.ID))

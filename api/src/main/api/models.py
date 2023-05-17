@@ -4,7 +4,7 @@ By: Zack Bamford
 
 Pydantic models
 """
-
+from datetime import datetime
 from typing import Annotated
 
 from pydantic import BaseModel, EmailStr
@@ -38,11 +38,9 @@ class TokenData(BaseModel):
 
 class EventBase(BaseModel):
     name: str
-    description: str
-    start_time: str
-    end_time: str
-    location: str
-    plan_id: str
+    date: datetime
+    distance: str
+    distance_unit: str
 
 
 class EventCreate(EventBase):
@@ -57,11 +55,12 @@ class Event(EventBase):
 
 
 class RunBase(BaseModel):
-    date: str
+    date: datetime
     status: str
 
 
 class RunCreate(RunBase):
+    usr_id: str
     event_id: str
 
 

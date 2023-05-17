@@ -16,12 +16,14 @@ from api.src.main.api.auth import oauth2_scheme, retrieve_user
 from api.src.main.db import generic_db
 from api.src.main.db.event_db import EventCommands, Event
 from api.src.main.db.plan_db import PlanCommands
+from api.src.main.db.run_db import RunCommands
 
 # setup
 router = APIRouter()
 Event.metadata.create_all(bind=generic_db.db_obj.engine)
 pc: PlanCommands = PlanCommands(generic_db.db_obj)
 ec: EventCommands = EventCommands(generic_db.db_obj)
+rc: RunCommands = RunCommands(generic_db.db_obj)
 
 
 # TODO: Restrict access to event creation to plan owners
@@ -96,6 +98,31 @@ def modify_event(event_id: str, name: str, date: datetime, distance: float, unit
         raise HTTPException(status_code=500, detail="Failed to modify event")
 
     return modified_event
+
+
+@router.get("/event/runs", tags=["Event"])
+def get_all_runs_from_event(event_id: str) -> list[models.Run]:
+    """
+    Get all run objects from an event
+
+    :param event_id: Event to check
+    :return: List of runs
+    """
+
+    # check for valid event object
+    if ec.retrieve_event(event_id) is None:
+        raise HTTPException(status_code=404, detail="Event not found.")
+
+    # get all runs from event
+    runs = ec.get_all_run_ids(event_id)
+
+    # check for success getting ids
+    if runs is None:
+        raise HTTPException(status_code=500, detail="Failed to get runs from event")
+
+    # retrieve run objects from ids
+
+    return runs
 
 
 @router.delete("/event/delete", tags=["Event"])
