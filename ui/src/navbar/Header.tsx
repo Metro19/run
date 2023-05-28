@@ -1,8 +1,7 @@
-import {Button, Center, rem, createStyles, Skeleton, Notification} from "@mantine/core";
+import {Button, Center, rem, createStyles, Skeleton} from "@mantine/core";
 import {HEADER_HEIGHT} from "../App";
 import {API_URL} from "../api_interface/api_setup";
 import {useEffect, useState} from "react";
-import {Simulate} from "react-dom/test-utils";
 
 
 // styles
@@ -20,7 +19,7 @@ const useStyles = createStyles((theme) => ({
         margin: "auto",
         position: "absolute",
 
-        left: `${theme.spacing.md}`,
+        marginLeft: `${theme.spacing.md}`,
     },
 
     user_menu: {
@@ -67,7 +66,11 @@ function UserMenu() {
                     <Button className={classes.button} onClick={() => window.location.href = "/login"}>Login</Button>
                 </div>
                 }
-                {userData && <Button className={classes.button}>{userData}</Button>}
+                {userData &&
+                <div>
+                    <Button className={classes.button} onClick={() => localStorage.removeItem("token")}>{userData}</Button>
+                </div>
+                }
             </Skeleton>
         </div>
     )
@@ -78,7 +81,7 @@ export function Header() {
     return (
         <div className={classes.header}>
             <Center h={HEADER_HEIGHT} className={classes.title}>
-                <h1><i>R</i>un</h1>
+                <h1><a href="/"><i>R</i>un</a></h1>
             </Center>
 
             <Center h={HEADER_HEIGHT} className={classes.user_menu}>

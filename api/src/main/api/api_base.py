@@ -4,26 +4,34 @@ By: Zack Bamford
 
 This file contains the base API for the app.
 """
-import os
-from datetime import datetime, timedelta
+from datetime import timedelta
 from typing import Annotated
-import bcrypt
 
 from fastapi import FastAPI, status
 from fastapi.exceptions import HTTPException
 from fastapi.params import Depends
-from fastapi.security.oauth2 import OAuth2PasswordRequestForm, OAuth2PasswordBearer
-from jose import jwt
-from jose.exceptions import JWTError
+from fastapi.security.oauth2 import OAuth2PasswordRequestForm
+from fastapi.middleware.cors import CORSMiddleware
 
 from . import auth
 from .auth import create_access_token, ACCESS_TOKEN_EXPIRE_MINUTES
-from .models import TokenData
 from .routers import user_api, plan_api, event_api, run_api
 from ..db import generic_db
 from ..db.user_db import UserCommands
 
 app = FastAPI()
+
+# Authorized origins
+origins = ["http://localhost:3000", "http://localhost:8000"]
+
+# setup CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["GET", "OPTIONS", "POST", "PUT", "DELETE"],
+    allow_headers=["*"],
+)
 
 # docs metadata
 tags_metadata = [
@@ -53,7 +61,7 @@ async def test():
 
 
 @app.post("/token", tags=["Auth"])
-async def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
+async def login(form_data: OAuth2PasswordRequestForm = Depends()):
     # get user
     user = uc.retrieve_user_by_email(form_data.username)
 
