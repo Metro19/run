@@ -10,8 +10,10 @@ from datetime import datetime
 from typing import Optional, Union, List
 
 import sqlalchemy
+from sqlalchemy.ext.hybrid import hybrid_method
 from sqlalchemy.orm import Session, relationship
 from sqlalchemy.orm import Mapped
+from sqlalchemy.sql.elements import and_
 
 from api.src.main.db import generic_db
 from api.src.main.db.user_db import User
@@ -57,6 +59,8 @@ class Plan(generic_db.Base):
     users: Mapped[str] = sqlalchemy.Column(sqlalchemy.String)  # user ID separated by "#"
 
     # relationship with child event
+    plan_members: Mapped[List["PlanMember"]] = relationship(cascade="all, delete-orphan",
+                                                            primaryjoin="Plan.ID == PlanMember.plan_id")
     child_events: Mapped[List["Event"]] = relationship(back_populates="plan", cascade="all, delete-orphan")
 
     def __repr__(self):
@@ -86,6 +90,7 @@ class Plan(generic_db.Base):
 
         return self.name == other.name and self.description == other.description and self.date == other.date and \
             self.distance == other.distance and self.distance_unit == other.distance_unit
+
 
 
 class Event(generic_db.Base):
@@ -245,6 +250,7 @@ class PlanCommands:
 
             logging.debug(f"Retrieved plan: %s", p)
             return p
+
 
     def get_user_ids_in_plan(self, plan_id: str) -> Optional[list[str]]:
         """

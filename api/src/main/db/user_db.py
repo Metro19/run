@@ -5,7 +5,7 @@ By: Zack Bamford
 Functions to modify and create users within the database
 """
 import logging
-from typing import Optional
+from typing import Optional, List
 
 import sqlalchemy
 from sqlalchemy.orm import Session
@@ -26,6 +26,9 @@ class User(generic_db.Base):
     email: Mapped[str] = sqlalchemy.Column(sqlalchemy.String)
     password: Mapped[str] = sqlalchemy.Column(sqlalchemy.String)
 
+    plan_members: Mapped[List["PlanMember"]] = sqlalchemy.orm.relationship(cascade="all, delete-orphan",
+                                                                    primaryjoin="User.ID == PlanMember.user_id")
+
     class Config:
         orm_mode = True
 
@@ -37,7 +40,7 @@ class User(generic_db.Base):
         if not isinstance(other, User):
             return False
 
-        return self.ID == other.ID and self.username == other.username and self.email == other.email and\
+        return self.ID == other.ID and self.username == other.username and self.email == other.email and \
             self.password == other.password
 
     def equals_no_id(self, other):

@@ -15,7 +15,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from . import auth
 from .auth import create_access_token, ACCESS_TOKEN_EXPIRE_MINUTES
-from .routers import user_api, plan_api, event_api, run_api
+from .routers import user_api, plan_api, event_api, run_api, plan_member_api
 from ..db import generic_db
 from ..db.user_db import UserCommands
 
@@ -50,6 +50,7 @@ app.router.include_router(user_api.router)
 app.router.include_router(plan_api.router)
 app.router.include_router(event_api.router)
 app.router.include_router(run_api.router)
+app.router.include_router(plan_member_api.router)
 
 # setup user commands
 uc: UserCommands = UserCommands(generic_db.db_obj)
