@@ -14,31 +14,11 @@ from sqlalchemy.orm.base import Mapped
 from sqlalchemy.orm.session import Session
 
 from api.src.main.db import generic_db
-from api.src.main.db.plan_db import PlanCommands, Plan
-from api.src.main.db.user_db import UserCommands, User
+# from api.src.main.db.plan_db import PlanCommands
+# from api.src.main.db.user_db import UserCommands
+from api.src.main.db.db_models import PlanMember, Plan, User, PlanPermissions
 
 
-class PlanPermissions(enum.Enum):
-    """
-    Enum for plan permissions
-    """
-    OWNER = 0
-    ADMIN = 1
-    PARTICIPANT = 2
-
-
-class PlanMember(generic_db.Base):
-    """
-    SQLAlchemy PlanMember table model
-    """
-
-    __tablename__ = 'plan_member'
-
-    ID: Mapped[str] = sqlalchemy.Column(sqlalchemy.String, primary_key=True)
-    permission: Mapped[PlanPermissions] = sqlalchemy.Column(sqlalchemy.Enum(PlanPermissions))
-
-    plan_id: Mapped[str] = sqlalchemy.Column(sqlalchemy.String, sqlalchemy.ForeignKey("plans.ID"))
-    user_id: Mapped[str] = sqlalchemy.Column(sqlalchemy.String, sqlalchemy.ForeignKey("users.ID"))
 
 
 class PlanMemberCommands:
@@ -191,17 +171,17 @@ class PlanMemberCommands:
                     return pm
 
 
-if __name__ == "__main__":
-    db = generic_db.db_obj
-
-    user_commands = UserCommands(db)
-    plan_member_commands = PlanMemberCommands(db)
-    plan_commands = PlanCommands(db)
-
-    u = user_commands.create_user("test", "test", "test")
-    p = plan_commands.create_plan("test", "test", datetime.now(), 123.123, "test")
-    p2 = plan_commands.create_plan("test2", "test2", datetime.now(), 123.123, "test2")
-
-    print(plan_member_commands.add_user_to_plan(u.ID, p.ID, PlanPermissions.OWNER).ID)
-    print(plan_member_commands.add_user_to_plan(u.ID, p2.ID, PlanPermissions.OWNER).ID)
-    print(plan_member_commands.get_all_plans_for_user(u.ID))
+# if __name__ == "__main__":
+#     db = generic_db.db_obj
+#
+#     user_commands = UserCommands(db)
+#     plan_member_commands = PlanMemberCommands(db)
+#     plan_commands = PlanCommands(db)
+#
+#     u = user_commands.create_user("test", "test", "test")
+#     p = plan_commands.create_plan("test", "test", datetime.now(), 123.123, "test")
+#     p2 = plan_commands.create_plan("test2", "test2", datetime.now(), 123.123, "test2")
+#
+#     print(plan_member_commands.add_user_to_plan(u.ID, p.ID, PlanPermissions.OWNER).ID)
+#     print(plan_member_commands.add_user_to_plan(u.ID, p2.ID, PlanPermissions.OWNER).ID)
+#     print(plan_member_commands.get_all_plans_for_user(u.ID))

@@ -9,7 +9,8 @@ from unittest import TestCase
 
 from api.src.main.db import generic_db
 from api.src.main.db.event_db import EventCommands
-from api.src.main.db.plan_db import PlanCommands, Event, Plan
+from api.src.main.db.plan_db import PlanCommands
+from api.src.main.db.db_models import Event, Plan
 
 
 class TestEventCommands(TestCase):

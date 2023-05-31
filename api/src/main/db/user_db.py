@@ -12,49 +12,8 @@ from sqlalchemy.orm import Session
 from sqlalchemy.orm import Mapped
 
 from api.src.main.db import generic_db
-
-
-class User(generic_db.Base):
-    """
-    Datatable to manage a user
-    """
-
-    __tablename__ = "users"
-
-    ID: Mapped[str] = sqlalchemy.Column(sqlalchemy.String, primary_key=True)
-    username: Mapped[str] = sqlalchemy.Column(sqlalchemy.String)
-    email: Mapped[str] = sqlalchemy.Column(sqlalchemy.String)
-    password: Mapped[str] = sqlalchemy.Column(sqlalchemy.String)
-
-    plan_members: Mapped[List["PlanMember"]] = sqlalchemy.orm.relationship(cascade="all, delete-orphan",
-                                                                    primaryjoin="User.ID == PlanMember.user_id")
-
-    class Config:
-        orm_mode = True
-
-    def __repr__(self):
-        return f"User: {self.ID} {self.username} {self.email} {self.password}"
-
-    def __eq__(self, other):
-        # check for same type
-        if not isinstance(other, User):
-            return False
-
-        return self.ID == other.ID and self.username == other.username and self.email == other.email and \
-            self.password == other.password
-
-    def equals_no_id(self, other):
-        """
-        Check to see if two users are equal, but ignore the ID
-
-        :param other: Other user object
-        :return: If the two users are equal, but ignore the ID
-        """
-        # check for same type
-        if not isinstance(other, User):
-            return False
-
-        return self.username == other.username and self.email == other.email and self.password == other.password
+from api.src.main.db.plan_member_db import PlanMember
+from api.src.main.db.db_models import User
 
 
 class UserCommands:

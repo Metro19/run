@@ -12,7 +12,7 @@ import sqlalchemy.engine.base
 from sqlalchemy.orm.session import Session
 
 from api.src.main.db import generic_db
-from api.src.main.db.plan_db import Run, Event
+from api.src.main.db.db_models import Run, Event
 
 
 class RunCommands:

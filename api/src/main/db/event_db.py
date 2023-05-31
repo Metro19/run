@@ -12,9 +12,8 @@ from sqlalchemy.orm import Session, relationship
 from sqlalchemy.orm import Mapped
 
 from api.src.main.db import generic_db
-from api.src.main.db.plan_db import PlanCommands, Plan, Run
-from api.src.main.db.user_db import User
-from api.src.main.db.plan_db import Event
+from api.src.main.db.plan_db import PlanCommands
+from api.src.main.db.db_models import Event, Run, Plan
 
 
 class EventCommands:

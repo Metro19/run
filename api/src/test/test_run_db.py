@@ -9,8 +9,9 @@ from unittest import TestCase
 
 from api.src.main.db import generic_db
 from api.src.main.db.event_db import EventCommands
-from api.src.main.db.plan_db import Run, Event, Plan, PlanCommands
+from api.src.main.db.plan_db import PlanCommands
 from api.src.main.db.run_db import RunCommands
+from api.src.main.db.db_models import Event, Plan, Run
 
 
 class TestRunCommands(TestCase):
@@ -31,7 +32,7 @@ class TestRunCommands(TestCase):
 
     VALID_EVENT = Event(ID="x", plan_id="x", name="x", date=dt, distance=21, distance_unit="ft")
 
-    VALID_PLAN = Plan(ID="x", name="x", description="x", date=dt, distance=21, distance_unit="ft", users="x")
+    VALID_PLAN = Plan(ID="x", name="x", description="x", date=dt, distance=21, distance_unit="ft")
 
     def test_create_run(self):
         """
