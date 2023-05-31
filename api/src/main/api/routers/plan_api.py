@@ -80,7 +80,7 @@ def create_plan(token: Annotated[str, Depends(oauth2_scheme)], name: str, descri
         raise HTTPException(status_code=500, detail="Failed to create plan")
 
     # add user as admin
-    created_plan = pmc.add_user_to_plan(user.ID, created_plan.ID, PlanPermissions.OWNER)
+    pmc_info = pmc.add_user_to_plan(user.ID, created_plan.ID, PlanPermissions.OWNER)
 
     return created_plan
 
